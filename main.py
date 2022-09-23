@@ -1,3 +1,4 @@
+from pw_generator import *
 from logo import logo
 from getpass import getpass
 from dotenv import load_dotenv
@@ -7,23 +8,44 @@ from cryptography.fernet import Fernet
 import os
 from keys import *
 import time
-import maskpass
 
+def load_key():
+    file = open("key.key", "rb")
+    key = file.read()
+    file.close()
+    return key
+# def write_key():
+#     key = Fernet.generate_key()
+#     with open("key.key", "wb") as key_file:
+#         key_file.write(key)
+        
+# write_key()
 
-
+key = load_key()
+fer = Fernet(key)
 
 def password_manager():
     # use key to encrypt/encode and decrypt/decode passwords
-    key = load_key()
-    fer = Fernet(key)
+    
 
     # function to add passwords to file 
     # if file doesn't exists, this will generate one
     def add_password():
         app = input("Website or App this is for: \n").upper()
         account = input("Account name: \n")
-        pswrd = getpass("Password: \n")
-        
+        choice = input("Would you like a password to be generated for you? type 'Y' for yes or 'N' for no\n").lower()
+        while True:
+            if choice == "y":
+                pswrd = scrambler()
+                print(f"Your new password is {pswrd}")
+                break
+            elif choice == "n":
+                pswrd = getpass("Password:\n")
+                break
+            else:
+                print("Invalid Entry")
+                time.sleep(.3)
+                continue
         with open('password.txt', 'a') as f:
             f.write(f"{app}|{account}|{fer.encrypt(pswrd.encode()).decode()} \n")
         
@@ -44,7 +66,7 @@ def password_manager():
                 Enter "3" to Exit. 
                 Enter "0" To Delete all Entries.\n """)
         if mode =="3": 
-            break
+            exit()
         
         if mode == "1":
             add_password()
@@ -61,12 +83,11 @@ def password_manager():
                 file = open("password.txt", "r+")
                 file.truncate(0)
                 file.close()
+                print("Your Entries have been cleared! \n\n\n")
             else:
                 print("Wrong Password")
                 time.sleep(1)
-            
-            
-            
+                
         else:
             print("Invalid Selection")
             continue
@@ -74,7 +95,7 @@ def password_manager():
 def master_user():
     while True:
         print(logo)
-        master_pswrd = getpass("Enter Master Password:\n")
+        master_pswrd = getpass("Type 'exit' to quit the program \nEnter Master Password: \n")
         master_file_exists = os.path.exists('.env')
         if master_file_exists:
             my_file = open(".env", "r")
@@ -83,22 +104,13 @@ def master_user():
             if master_pswrd == index:
                 password_manager()
                 False
+            elif master_pswrd == "exit":
+                exit()
             else:
                 print("Incorrect Password")
-                time.sleep(1)
-                os.system('cls')
-                print("program will close in: \n 3")                
-                time.sleep(1)
-                os.system('cls')
-                print("program will close in: \n 2")
-                time.sleep(1)
-                os.system('cls')
-                print("program will close in: \n 1")
-                time.sleep(1)
-                os.system('cls')
-                print("Goodbye!")
+                print("Try Again!")
                 time.sleep(.5)
-                break
+                continue
                 
         elif master_file_exists == False:
             with open('.env', 'a') as m:
@@ -106,8 +118,6 @@ def master_user():
                 password_manager()
     
         
-           
-
 master_user()
 
 
